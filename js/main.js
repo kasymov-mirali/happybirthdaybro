@@ -8,14 +8,16 @@
   const SECRET = "семья";                // секретное слово: мы друг другу семья
   const MUSIC_KEY = "mili-music";        // включена ли музыка
   const ORDER = ["index.html", "valorant.html", "memes.html", "characters.html", "bro.html", "final.html"];
-  // Цвет «шторки» и значок при переходе на каждую страницу
+  // Переход на каждую страницу: свой эффект (k), цвет (c) и надпись (t)
+  //   glitch — помехи как в игре, bam — комикс-взрыв, sakura — вихрь лепестков,
+  //   heart — сердце-портал, warp — прыжок в гиперпространство, iris — круг
   const PAGE_META = {
-    "index.html": { c: "#3a1670", i: "🎂" },
-    "valorant.html": { c: "#0d3a2d", i: "🎮" },
-    "memes.html": { c: "#ff2f78", i: "😈" },
-    "characters.html": { c: "#ff7cbf", i: "🐾" },
-    "bro.html": { c: "#f06a48", i: "🧡" },
-    "final.html": { c: "#4a1d96", i: "💜" },
+    "index.html": { k: "iris", c: "#3a1670", t: "🎂" },
+    "valorant.html": { k: "glitch", c: "#0d3a2d", t: "ХАЙЛАЙТЫ" },
+    "memes.html": { k: "bam", c: "#ff2f78", t: "БАМ!" },
+    "characters.html": { k: "sakura", c: "#ff7cbf", t: "ЭТО ВСЁ ТЫ" },
+    "bro.html": { k: "heart", c: "#f06a48", t: "БРО" },
+    "final.html": { k: "warp", c: "#08041a", t: "ФИНАЛ ✦" },
   };
 
   const body = document.body;
@@ -49,13 +51,6 @@
     body.append(glow);
     addEventListener("mousemove", (e) => { glow.style.translate = `${e.clientX}px ${e.clientY}px`; }, { passive: true });
   }
-
-  // Шторка для переходов между страницами
-  const curtain = document.createElement("div");
-  curtain.className = "curtain";
-  curtain.setAttribute("aria-hidden", "true");
-  curtain.innerHTML = "<span></span>";
-  body.append(curtain);
 
   // Тост
   let toastEl, toastTimer;
@@ -180,7 +175,11 @@
         audio.volume = Math.min(1, Math.max(0, v));
       }
     }
-    const targetVol = () => (videoDuck || hbDuck ? DUCK_VOL : SONG_VOL);
+    // Громкость, которую выбрала она сама ползунком (0…1), запоминаем на время сессии
+    const VOL_KEY = "mili-music-vol";
+    let userVol = Number(ss.get(VOL_KEY));
+    if (!(userVol >= 0 && userVol <= 1) || ss.get(VOL_KEY) === null) userVol = 1;
+    const targetVol = () => (videoDuck || hbDuck ? DUCK_VOL : SONG_VOL) * userVol;
 
     // --- 8-битные звуки ---
     function tone(type, m, t, dur, vol) {
@@ -225,6 +224,25 @@
     btn.setAttribute("aria-label", "Включить или выключить музыку");
     btn.innerHTML = '<span class="note">♪</span><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
     body.append(btn);
+
+    // Ползунок громкости рядом с кнопкой
+    const volBox = document.createElement("label");
+    volBox.className = "vol-box";
+    volBox.innerHTML = '<span class="vol-ico" aria-hidden="true">🔊</span>' +
+      '<input type="range" min="0" max="100" step="1" aria-label="Громкость музыки">';
+    const volInput = volBox.querySelector("input");
+    const volIco = volBox.querySelector(".vol-ico");
+    volInput.value = Math.round(userVol * 100);
+    const volIcon = () => { volIco.textContent = userVol === 0 ? "🔇" : userVol < 0.5 ? "🔉" : "🔊"; };
+    volIcon();
+    volInput.addEventListener("input", () => {
+      userVol = volInput.value / 100;
+      ss.set(VOL_KEY, String(userVol));
+      volIcon();
+      if (playing) setVol(targetVol(), 0.05);
+    });
+    body.append(volBox);
+
     const sync = () => btn.classList.toggle("on", playing);
 
     function start() {
@@ -362,6 +380,42 @@
     return words;
   }
 
+  // Разбить заголовок на буквы; у каждой буквы своя случайная точка, откуда она прилетит.
+  // Слова не разрываются при переносе строки.
+  function splitChars(el) {
+    const narrow = innerWidth < 600;
+    const spread = narrow ? 0.55 : 1;
+    const walk = (node) => {
+      [...node.childNodes].forEach((n) => {
+        if (n.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach((part) => {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.append(part); return; }
+            const w = document.createElement("span");
+            w.className = "fw";
+            Array.from(part).forEach((ch) => {
+              const c = document.createElement("span");
+              c.className = "ch";
+              c.textContent = ch;
+              const ang = Math.random() * Math.PI * 2;
+              const dist = rnd(90, 260) * spread;
+              c.style.cssText =
+                `--tx:${(Math.cos(ang) * dist).toFixed(0)}px;--ty:${(Math.sin(ang) * dist * 0.8).toFixed(0)}px;` +
+                `--rz:${rnd(-200, 200).toFixed(0)}deg;--sc:${rnd(-0.6, 1.4).toFixed(2)};--o:${rnd(0, 0.35).toFixed(2)}`;
+              w.append(c);
+            });
+            frag.append(w);
+          });
+          n.replaceWith(frag);
+        } else if (n.nodeType === 1 && n.tagName !== "BR") {
+          walk(n);
+        }
+      });
+    };
+    walk(el);
+  }
+
   // Показать блок (и запустить счётчики внутри)
   function showEl(el) {
     el.classList.add("in");
@@ -372,7 +426,7 @@
   function init() {
     teardown();
     const pageNum = Number(body.dataset.page) || 0;
-    P = { pending: [], ro: null, extra: [], fill: null, decor: null, tilts: [], zooms: [], scrubs: [], hs: [], para: [] };
+    P = { pending: [], ro: null, extra: [], fill: null, decor: null, tilts: [], zooms: [], scrubs: [], hs: [], para: [], flys: [] };
     const main = document.querySelector("main");
 
     /* ---------- Верхняя панель с прогрессом ---------- */
@@ -466,15 +520,21 @@
       t.append(track);
     });
 
-    /* ---------- Заголовки по словам и текст, который «загорается» ---------- */
-    main.querySelectorAll(".split").forEach((el) => splitWords(el, "w"));
+    /* ---------- Заголовки из разлетевшихся букв и текст, который «загорается» ---------- */
+    P.flys = [...main.querySelectorAll(".split")].map((el) => {
+      splitChars(el);
+      el.classList.add("fly");
+      const k = reduceMotion ? 1 : 0;
+      el.style.setProperty("--k", k);
+      return { el, k };
+    });
     main.querySelectorAll(".scrub").forEach((el) => P.scrubs.push({ el, words: splitWords(el, "sw"), n: -1 }));
 
     /* ---------- Разные способы появления ---------- */
-    main.querySelectorAll(".grid2 > .clip.reveal").forEach((el, i) => el.classList.add(i % 2 ? "fx-right" : "fx-left"));
-    main.querySelectorAll(".sticker.reveal").forEach((el) => el.classList.add("fx-zoom"));
-    main.querySelectorAll(".memory.reveal, .pair.reveal").forEach((el) => el.classList.add("fx-blur"));
-    main.querySelectorAll(".ava.reveal").forEach((el) => el.classList.add("fx-pop"));
+    // Фото и видео — как полароид: переворачиваются в 3D и «проявляются»
+    main.querySelectorAll(".grid2 > .clip.reveal").forEach((el, i) => el.classList.add("fx-polaroid", i % 2 ? "from-right" : "from-left"));
+    main.querySelectorAll(".sticker.reveal, .memory.reveal, .pair.reveal").forEach((el) => el.classList.add("fx-polaroid"));
+    main.querySelectorAll(".ava.reveal").forEach((el) => el.classList.add("fx-pop", "fx-develop"));
 
     /* ---------- Что двигается при прокрутке ---------- */
     P.tilts = [...main.querySelectorAll(".clip .frame, .memory > img, .memory > video, .grid2 > .sticker > img")];
@@ -575,6 +635,20 @@
       return;
     }
 
+    // Буквы заголовков слетаются на место, пока заголовок поднимается по экрану.
+    // Только вперёд: собранный заголовок обратно не разлетается.
+    const atBottom = y >= max - 4;
+    for (const f of P.flys) {
+      if (f.k >= 1) continue;
+      const r = f.el.getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      if (r.bottom < 0) { f.k = 1; f.el.style.setProperty("--k", 1); continue; } // проскочили — просто собрать
+      const p = clamp((vh * 0.98 - r.top) / (vh * 0.42), 0, 1);
+      let e = atBottom && r.top < vh ? 1 : 1 - Math.pow(1 - p, 3);
+      if (e > 0.985) e = 1;
+      if (e > f.k) { f.k = e; f.el.style.setProperty("--k", e.toFixed(3)); }
+    }
+
     // Глубина: фон и украшения едут медленнее контента
     aurora.style.translate = `0 ${(-frac * 12).toFixed(2)}vh`;
     if (P.decor) P.decor.style.translate = `0 ${(-frac * 70).toFixed(2)}vh`;
@@ -633,32 +707,107 @@
      ================================================================= */
   let navigating = false;
 
-  async function curtainIn(meta, x, y) {
-    curtain.style.background = meta.c;
-    curtain.querySelector("span").textContent = meta.i;
-    curtain.style.setProperty("--x", x + "px");
-    curtain.style.setProperty("--y", y + "px");
-    curtain.className = "curtain in";
-    await wait(reduceMotion ? 50 : 560);
+  const esc = (s) => s.replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  // 12-лучевая звезда для комикс-взрыва
+  const STAR = Array.from({ length: 24 }, (_, k) => {
+    const a = (k / 24) * Math.PI * 2, r = k % 2 ? 36 : 50;
+    return `${(50 + Math.cos(a) * r).toFixed(1)}% ${(50 + Math.sin(a) * r).toFixed(1)}%`;
+  }).join(",");
+
+  // Собрать слой перехода для нужной страницы
+  function buildTx(meta, x, y) {
+    const el = document.createElement("div");
+    const kind = reduceMotion ? "fade" : meta.k;
+    el.className = "tx tx-" + kind;
+    el.setAttribute("aria-hidden", "true");
+    el.style.setProperty("--c", meta.c);
+    el.style.setProperty("--x", x + "px");
+    el.style.setProperty("--y", y + "px");
+    const label = `<b class="tx-label" data-text="${esc(meta.t)}">${esc(meta.t)}</b>`;
+    let html = "";
+    if (kind === "glitch") {
+      for (let i = 0; i < 8; i++) html += `<i style="--i:${i};--s:${i % 2 ? 1 : -1}"></i>`;
+    } else if (kind === "bam") {
+      html = `<div class="burst b1" style="clip-path:polygon(${STAR})"></div><div class="burst b2" style="clip-path:polygon(${STAR})"></div>`;
+    } else if (kind === "sakura") {
+      html = '<div class="bg"></div>';
+      const n = innerWidth > 900 ? 34 : 22;
+      for (let i = 0; i < n; i++) {
+        html += `<i style="top:${rnd(-10, 100).toFixed(1)}%;font-size:${rnd(16, 38).toFixed(0)}px;` +
+          `--dl:${rnd(0, 0.6).toFixed(2)}s;--dur:${rnd(1.1, 1.7).toFixed(2)}s;--dy:${rnd(-30, 30).toFixed(0)}vh;--r:${rnd(240, 720).toFixed(0)}deg">${i % 3 ? "🌸" : "✿"}</i>`;
+      }
+    } else if (kind === "heart") {
+      html = '<svg class="heart" viewBox="0 0 100 92"><defs><linearGradient id="txh" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#ff9a76"/><stop offset="1" stop-color="#f0486a"/></linearGradient></defs>' +
+        '<path fill="url(#txh)" d="M50 90 C 20 68 0 50 0 27 C 0 11 12 0 27 0 C 37 0 45 6 50 14 C 55 6 63 0 73 0 C 88 0 100 11 100 27 C 100 50 80 68 50 90 Z"/></svg>';
+    } else if (kind === "warp") {
+      html = "<canvas></canvas>";
+    } else {
+      html = '<div class="bg"></div>';
+    }
+    el.innerHTML = html + label;
+    body.append(el);
+    if (kind === "warp") warp(el);
+    return el;
   }
-  async function curtainOut() {
-    curtain.className = "curtain in out";
-    await wait(reduceMotion ? 50 : 620);
-    curtain.className = "curtain";
+
+  // Звёзды, летящие из центра (прыжок в гиперпространство)
+  function warp(el) {
+    const cvs = el.querySelector("canvas");
+    const c2 = cvs.getContext("2d");
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = (cvs.width = innerWidth * dpr), H = (cvs.height = innerHeight * dpr);
+    const cx = W / 2, cy = H / 2, maxD = Math.hypot(cx, cy);
+    const cols = ["#ffffff", "#ffd27a", "#c79bff", "#8fd8ff"];
+    const stars = Array.from({ length: 260 }, () => ({ a: Math.random() * Math.PI * 2, d: Math.random() * maxD * 0.6, v: rnd(2, 6), c: cols[(Math.random() * 4) | 0] }));
+    const t0 = performance.now();
+    c2.fillStyle = "#08041a";
+    c2.fillRect(0, 0, W, H);
+    (function frame(t) {
+      if (!el.isConnected) return;
+      const acc = 1 + Math.min(1, (t - t0) / 700) * 12; // разгон
+      c2.fillStyle = "rgba(8,4,26,.32)";
+      c2.fillRect(0, 0, W, H);
+      c2.lineCap = "round";
+      for (const s of stars) {
+        const d0 = s.d;
+        s.d += s.v * acc * dpr * (0.3 + s.d / maxD);
+        if (s.d > maxD) { s.d = rnd(0, 40) * dpr; continue; }
+        const ca = Math.cos(s.a), sa = Math.sin(s.a);
+        c2.strokeStyle = s.c;
+        c2.globalAlpha = Math.min(1, s.d / (maxD * 0.25));
+        c2.lineWidth = (0.6 + (s.d / maxD) * 2.4) * dpr;
+        c2.beginPath();
+        c2.moveTo(cx + ca * d0, cy + sa * d0);
+        c2.lineTo(cx + ca * s.d, cy + sa * s.d);
+        c2.stroke();
+      }
+      c2.globalAlpha = 1;
+      requestAnimationFrame(frame);
+    })(t0);
   }
+
+  const TX_IN = 760, TX_HOLD = 180, TX_OUT = 720; // длительности фаз, мс
 
   async function go(href, opts = {}) {
     if (navigating) return;
     const name = href.split(/[?#]/)[0] || "index.html";
     if (name !== "index.html" && !loggedIn()) { location.href = "index.html"; return; }
     navigating = true;
-    const meta = PAGE_META[name] || { c: "#3a1670", i: "✨" };
+    const meta = PAGE_META[name] || { k: "iris", c: "#3a1670", t: "✨" };
     const x = opts.x != null ? opts.x : innerWidth / 2;
     const y = opts.y != null ? opts.y : innerHeight / 2;
     closeLb();
-    body.classList.add("leaving");
+    document.querySelectorAll(".tx").forEach((o) => o.remove()); // остатки прошлого перехода
     const fetching = fetch(name, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); });
-    await curtainIn(meta, x, y);
+    fetching.catch(() => {}); // ошибку разберём ниже
+    const tx = buildTx(meta, x, y);
+    void tx.offsetWidth; // чтобы анимация точно стартовала с начала
+    tx.classList.add("in");
+    body.classList.add("leaving");
+    await wait(reduceMotion ? 200 : TX_IN);
 
     let doc;
     try {
@@ -668,6 +817,7 @@
       location.href = name; // например, при открытии с диска — просто обычный переход
       return;
     }
+    await wait(reduceMotion ? 0 : TX_HOLD);
 
     document.querySelectorAll("video").forEach((v) => v.pause());
     Music.duck(false);
@@ -686,8 +836,10 @@
     document.querySelector("main").replaceWith(newMain);
     if (opts.push !== false) history.pushState({ p: name }, "", name);
     scrollTo(0, 0);
-    init();
-    await curtainOut();
+    try { init(); } catch (e) { console.error(e); }
+    tx.classList.add("out");
+    await wait(reduceMotion ? 200 : TX_OUT);
+    tx.remove();
     party(); // хлопушка на новой странице
     navigating = false;
   }
@@ -695,7 +847,7 @@
   history.replaceState({ p: location.pathname.split("/").pop() || "index.html" }, "", location.href);
   addEventListener("popstate", () => go(location.pathname.split("/").pop() || "index.html", { push: false }));
   addEventListener("pageshow", (e) => {
-    if (e.persisted) { body.classList.remove("leaving"); curtain.className = "curtain"; navigating = false; }
+    if (e.persisted) { body.classList.remove("leaving"); document.querySelectorAll(".tx").forEach((o) => o.remove()); navigating = false; }
   });
 
   /* =================================================================

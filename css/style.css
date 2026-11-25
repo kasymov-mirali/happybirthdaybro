@@ -8,7 +8,7 @@ body {
   background-color: var(--bg);
   color: var(--fg);
   font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 17px;
+  font-size: 19px;
   line-height: 1.55;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
@@ -40,7 +40,7 @@ section { margin: 0 0 64px; }
 .prose.center, .center .prose { margin-left: auto; margin-right: auto; }
 .center { text-align: center; }
 .muted { color: var(--muted, inherit); opacity: .9; }
-.small { font-size: 14px; }
+.small { font-size: 16px; }
 
 /* Сетка в две колонки на широких экранах */
 @media (min-width: 860px) {
@@ -232,7 +232,7 @@ video { width: 100%; background: #000; }
 .cake { position: relative; z-index: 1; font-size: 66px; line-height: 1; animation: bob 3s ease-in-out infinite; }
 .cover h1 { margin-bottom: .3em; }
 .gate { display: flex; flex-direction: column; gap: 12px; width: min(100%, 380px); margin: 26px auto 0; }
-.gate label { color: var(--muted); font-size: 16px; }
+.gate label { color: var(--muted); font-size: 18px; }
 .gate input {
   min-height: 58px; padding: 0 16px;
   border: 2px solid rgba(255, 255, 255, .16); border-radius: 18px;
@@ -247,7 +247,7 @@ video { width: 100%; background: #000; }
 .unlocked .gate-wrap { display: none; }
 .unlocked .welcome { display: block; animation: pop .7s ease both; }
 .welcome .big { font-size: clamp(30px, 9vw, 60px); }
-.welcome p { font-size: 19px; color: var(--muted); margin-bottom: 30px; }
+.welcome p { font-size: 22px; color: var(--muted); margin-bottom: 30px; }
 
 /* =================================================================
    1 — ВАЛОРАНТ
@@ -293,7 +293,7 @@ body.theme-valo::after { /* лёгкие «сканлайны» как на мо
   background: linear-gradient(160deg, rgba(61, 255, 143, .12), rgba(61, 255, 143, .03));
   clip-path: var(--cut);
 }
-.stat span { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
+.stat span { display: block; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
 .stat b { display: block; margin-top: 4px; font: 700 14px/1.2 "Unbounded", sans-serif; color: var(--accent); }
 .theme-valo .ticker { --ticker-bg: var(--accent); --ticker-fg: var(--on-accent); box-shadow: 0 0 30px var(--glow); }
 .theme-valo .ticker.alt { --ticker-bg: #ff4d6d; --ticker-fg: #fff; --tilt: 1.5deg; box-shadow: 0 0 30px rgba(255, 77, 109, .4); }
@@ -368,8 +368,8 @@ body.theme-memes {
 .sticker.reveal { transform: translateY(26px) rotate(var(--r, 0deg)); }
 .sticker.reveal.in { transform: rotate(var(--r, 0deg)); }
 .sticker img { width: 100%; border-radius: 10px; }
-.sticker figcaption { padding: 12px 6px 4px; font-weight: 800; font-size: 18px; line-height: 1.35; }
-.sticker figcaption small { display: block; margin-top: 4px; font-weight: 600; font-size: 15px; color: var(--muted); }
+.sticker figcaption { padding: 12px 6px 4px; font-weight: 800; font-size: 21px; line-height: 1.35; }
+.sticker figcaption small { display: block; margin-top: 4px; font-weight: 600; font-size: 17px; color: var(--muted); }
 .sticker.narrow { max-width: 420px; margin-left: auto; margin-right: auto; }
 .meters {
   max-width: 760px; padding: 22px 20px 6px;
@@ -458,7 +458,7 @@ body.theme-anime { background-image: linear-gradient(165deg, #ffe3f1 0%, #ece7ff
 }
 body.theme-warm {
   font-family: "Lora", Georgia, "Times New Roman", serif;
-  font-size: 18px; line-height: 1.7;
+  font-size: 20px; line-height: 1.7;
   background-image:
     radial-gradient(ellipse at 50% 0, #ffd9bd 0%, transparent 60%),
     radial-gradient(circle at 0% 60%, rgba(232, 160, 180, .18), transparent 35%),
@@ -470,7 +470,7 @@ body.theme-warm {
 .theme-warm h2::before { content: "✿ "; color: var(--accent); font-style: normal; font-size: .7em; vertical-align: .12em; }
 .years { text-align: center; position: relative; }
 .years .num { font: 900 clamp(90px, 30vw, 190px)/1 "Unbounded", sans-serif; }
-.years .cap { font-style: italic; color: var(--muted); font-size: 20px; }
+.years .cap { font-style: italic; color: var(--muted); font-size: 23px; }
 .memory {
   position: relative;
   margin: 26px 0 0; padding: 12px 12px 14px;
@@ -488,7 +488,7 @@ body.theme-warm {
 .memory video.tall { max-height: 78vh; max-height: 78svh; object-fit: contain; }
 .memory.natural-wrap { width: fit-content; max-width: 100%; margin-left: auto; margin-right: auto; }
 .memory.natural-wrap img { width: auto; }
-.memory figcaption { padding: 10px 6px 0; font-style: italic; color: var(--muted); font-size: 16px; }
+.memory figcaption { padding: 10px 6px 0; font-style: italic; color: var(--muted); font-size: 18px; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 26px; }
 .pair .memory { margin: 0; }
 .pair .memory img { height: 100%; object-fit: cover; aspect-ratio: 3 / 4; }
@@ -543,9 +543,9 @@ body.theme-final {
 .shooting.s1 { top: 8%; right: -10%; animation-delay: 1.5s; }
 .shooting.s2 { top: 30%; right: -15%; animation-delay: 5.5s; animation-duration: 11s; }
 .wish { text-align: center; }
-.wish p { font-size: 20px; }
+.wish p { font-size: 23px; }
 .wish .line { display: block; }
-.wish .one { font-size: 22px; font-weight: 800; color: var(--accent); }
+.wish .one { font-size: 25px; font-weight: 800; color: var(--accent); }
 .gift-stage { text-align: center; }
 .gift-stage .tap { color: var(--muted); margin-top: 6px; }
 .gift {
@@ -601,7 +601,7 @@ body.theme-final {
   box-shadow: 0 0 0 4px var(--gold), 0 20px 60px var(--glow);
 }
 .qr img { width: 100%; image-rendering: pixelated; }
-.prize p { font-size: 19px; font-weight: 700; }
+.prize p { font-size: 21px; font-weight: 700; }
 
 /* Созвездие Стрельца */
 .zodiac { text-align: center; }
@@ -619,7 +619,7 @@ body.theme-final {
 .zodiac .arrow { stroke: var(--gold); stroke-width: 2; stroke-linecap: round; fill: none; opacity: 0; transform: translateX(-30px); transition: opacity .8s ease 1.4s, transform 1s cubic-bezier(.2, .9, .2, 1) 1.4s; }
 .zodiac.in .arrow { opacity: .9; transform: none; }
 .zodiac .sign { font-size: 54px; line-height: 1; color: var(--gold); text-shadow: 0 0 24px rgba(255, 210, 122, .6); }
-.zodiac p { font-size: 19px; }
+.zodiac p { font-size: 21px; }
 .last { padding-top: 10px; }
 .last .btn { font-size: 20px; }
 
@@ -740,7 +740,7 @@ body.leaving .page, body.leaving .cover { animation: pageOut .33s ease forwards;
 @keyframes spinAng { to { --ang: 360deg; } }
 .letter-inner { border-radius: 27px; padding: 36px 24px 30px; background: linear-gradient(160deg, #23143d, #170d2b); }
 .letter h2 { text-align: center; margin-bottom: .8em; }
-.letter p { font-size: 19px; line-height: 1.7; }
+.letter p { font-size: 21px; line-height: 1.7; }
 .letter .big-love { font: 800 clamp(22px, 6vw, 30px)/1.3 "Unbounded", sans-serif; text-align: center; margin: 1em 0 .6em; }
 .letter .sig { text-align: right; font-weight: 800; color: var(--gold); margin: 1.2em 0 0; }
 .heartbeat { display: inline-block; animation: beat 1.3s ease-in-out infinite; }
@@ -958,3 +958,205 @@ body { --f0: #ff6fae; --f1: #ffd27a; --f2: #8f6bff; --f3: #3dff9c; }
   .shine { color: var(--accent); background: none; }
   html { scroll-behavior: auto; }
 }
+
+/* ============ Страница персонажей: зрелищный вступительный текст ============ */
+.chars-lead { margin-top: 18px; }
+.chars-lead .line {
+  display: block; margin: 0 0 .55em;
+  font-size: clamp(21px, 5.4vw, 28px); font-weight: 800; line-height: 1.35;
+}
+.chars-lead .line.accent {
+  margin-top: .9em;
+  font-family: "Unbounded", system-ui, sans-serif; font-size: clamp(22px, 6vw, 34px);
+  background: var(--shine); background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: charsShine 4s linear infinite;
+}
+@keyframes charsShine { to { background-position: -200% center; } }
+.ava figcaption { font-size: 20px; }
+.ava figcaption small { display: block; margin-top: 4px; font-size: 15px; font-weight: 600; line-height: 1.35; opacity: .85; }
+
+/* ============ Ползунок громкости рядом с кнопкой музыки ============ */
+.vol-box {
+  position: fixed; left: 74px; bottom: calc(22px + env(safe-area-inset-bottom)); z-index: 90;
+  display: flex; align-items: center; gap: 8px;
+  height: 38px; padding: 0 14px; border-radius: 19px;
+  background: rgba(20, 12, 36, .72); color: #fff;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+  font: 800 16px/1 "Nunito", sans-serif;
+}
+.vol-box input[type=range] { width: 110px; accent-color: #a855ff; cursor: pointer; }
+.vol-box .vol-ico { width: 20px; text-align: center; }
+
+/* =================================================================
+   ПЕРЕХОДЫ МЕЖДУ СТРАНИЦАМИ — у каждой страницы свой
+   Фазы: .in — экран закрывается, .in.out — открывается уже новая страница
+   ================================================================= */
+.tx { position: fixed; inset: 0; z-index: 300; pointer-events: auto; overflow: hidden; contain: strict; }
+.tx-label {
+  position: absolute; left: 50%; top: 50%; z-index: 5;
+  translate: -50% -50%; white-space: nowrap;
+  font: 900 clamp(34px, 11vw, 96px)/1 "Unbounded", system-ui, sans-serif; color: #fff;
+  opacity: 0; scale: .6;
+}
+.tx.in .tx-label { animation: txLabelIn .45s cubic-bezier(.2, 1.5, .4, 1) .3s forwards; }
+.tx.in.out .tx-label { animation: txLabelOut .25s ease forwards !important; }
+@keyframes txLabelIn { to { opacity: 1; scale: 1; } }
+@keyframes txLabelOut { from { opacity: 1; scale: 1; } to { opacity: 0; scale: 1.4; filter: blur(6px); } }
+
+/* Круг (возврат на обложку) и простое затухание */
+.tx-iris .bg, .tx-fade .bg { position: absolute; inset: 0; background: var(--c); }
+.tx-iris .bg { clip-path: circle(0 at var(--x) var(--y)); }
+.tx-iris.in .bg { animation: irisIn .6s cubic-bezier(.7, 0, .3, 1) forwards; }
+.tx-iris.in.out .bg { animation: irisOut .6s cubic-bezier(.7, 0, .3, 1) forwards; }
+@keyframes irisIn { to { clip-path: circle(150vmax at var(--x) var(--y)); } }
+@keyframes irisOut { from { clip-path: circle(150vmax at 50% 50%); } to { clip-path: circle(0 at 50% 50%); } }
+.tx-fade { background: var(--c); opacity: 0; transition: opacity .2s ease; }
+.tx-fade.in { opacity: 1; }
+.tx-fade.in.out { opacity: 0; }
+.tx-fade .tx-label { opacity: 1; scale: 1; animation: none !important; }
+
+/* Валорант: экран режут полосы с помехами */
+.tx-glitch i {
+  position: absolute; left: 0; width: 100%;
+  top: calc(var(--i) * 12.5%); height: calc(12.5% + 1px);
+  background: #070b0d; transform: translateX(calc(var(--s) * 102%));
+}
+.tx-glitch i:nth-child(even) { background: var(--c); }
+.tx-glitch i:nth-child(3n) { box-shadow: inset 0 -3px 0 #3dff9c; }
+.tx-glitch.in i { animation: barIn .5s cubic-bezier(.8, 0, .2, 1) calc(var(--i) * 30ms) forwards; }
+.tx-glitch.in.out i { animation: barOut .5s cubic-bezier(.8, 0, .2, 1) calc(var(--i) * 30ms) forwards; }
+@keyframes barIn { to { transform: none; } }
+@keyframes barOut { from { transform: none; } to { transform: translateX(calc(var(--s) * -102%)); } }
+.tx-glitch .tx-label { color: #eafff5; letter-spacing: .04em; text-shadow: 3px 0 #ff3b5c, -3px 0 #3dff9c; }
+.tx-glitch.in .tx-label { animation: txLabelIn .2s steps(3) .32s forwards, glitchJit .28s steps(2) .32s infinite; }
+@keyframes glitchJit {
+  0% { transform: translate(0, 0); clip-path: inset(0 0 0 0); text-shadow: 3px 0 #ff3b5c, -3px 0 #3dff9c; }
+  25% { transform: translate(-4px, 1px); clip-path: inset(18% 0 52% 0); text-shadow: -5px 0 #ff3b5c, 5px 0 #3dff9c; }
+  50% { transform: translate(3px, -2px); clip-path: inset(0 0 0 0); }
+  75% { transform: translate(2px, 2px); clip-path: inset(60% 0 8% 0); text-shadow: 6px 0 #ff3b5c, -2px 0 #3dff9c; }
+  100% { transform: translate(0, 0); clip-path: inset(0 0 0 0); }
+}
+
+/* Мемы: комикс-взрыв «БАМ!» */
+.tx-bam .burst {
+  position: absolute; left: var(--x); top: var(--y);
+  width: 320vmax; height: 320vmax; margin: -160vmax 0 0 -160vmax;
+  transform: scale(0) rotate(-40deg);
+}
+.tx-bam .b1 { background: radial-gradient(circle, rgba(0, 0, 0, .16) 26%, transparent 28%) 0 0 / 22px 22px, #ffd23f; }
+.tx-bam .b2 { background: radial-gradient(circle, rgba(255, 255, 255, .22) 26%, transparent 28%) 0 0 / 22px 22px, var(--c); }
+.tx-bam.in .b1 { animation: burstIn .5s cubic-bezier(.3, 1.2, .5, 1) forwards; }
+.tx-bam.in .b2 { animation: burstIn .5s cubic-bezier(.3, 1.2, .5, 1) .12s forwards; }
+.tx-bam.in.out .b2 { animation: burstOut .45s cubic-bezier(.6, 0, .4, 1) forwards; }
+.tx-bam.in.out .b1 { animation: burstOut .45s cubic-bezier(.6, 0, .4, 1) .1s forwards; }
+@keyframes burstIn { to { transform: scale(1) rotate(0deg); } }
+@keyframes burstOut { from { transform: scale(1) rotate(0deg); } to { transform: scale(0) rotate(50deg); } }
+.tx-bam .tx-label {
+  font-size: clamp(56px, 20vw, 170px); color: #fff; rotate: -8deg;
+  -webkit-text-stroke: 4px #1a1020; paint-order: stroke fill;
+  text-shadow: 7px 7px 0 #1a1020;
+}
+.tx-bam.in .tx-label { animation: txLabelIn .4s cubic-bezier(.2, 2, .4, 1) .38s forwards, bamShake .12s linear .5s 4; }
+@keyframes bamShake { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(-5px, 3px); } 66% { transform: translate(4px, -3px); } }
+
+/* Персонажи: вихрь лепестков сакуры */
+.tx-sakura .bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(155deg, #ffb3d9, var(--c) 45%, #b9a2ff);
+  clip-path: circle(0 at var(--x) var(--y));
+}
+.tx-sakura.in .bg { animation: irisIn .7s cubic-bezier(.7, 0, .3, 1) .1s forwards; }
+.tx-sakura.in.out .bg { animation: sakuraOut .65s cubic-bezier(.7, 0, .3, 1) forwards; }
+@keyframes sakuraOut { from { clip-path: circle(150vmax at 50% 50%); opacity: 1; } to { clip-path: circle(0 at 50% 50%); opacity: .6; } }
+.tx-sakura i {
+  position: absolute; left: -12%; z-index: 3; font-style: normal; line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(160, 40, 110, .3));
+}
+.tx-sakura.in i { animation: petal var(--dur) cubic-bezier(.3, .1, .6, 1) var(--dl) both; }
+@keyframes petal {
+  from { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  12% { opacity: 1; }
+  85% { opacity: 1; }
+  to { transform: translate(125vw, var(--dy)) rotate(var(--r)); opacity: 0; }
+}
+.tx-sakura .tx-label { color: #fff; text-shadow: 0 4px 24px rgba(180, 40, 120, .45); font-size: clamp(30px, 9vw, 80px); }
+
+/* Бро: сердце-портал, бьётся и раскрывается на весь экран */
+.tx-heart .heart {
+  position: absolute; left: 50%; top: 50%;
+  width: 60px; height: 56px; margin: -28px 0 0 -30px;
+  transform: scale(0); overflow: visible;
+}
+.tx-heart.in .heart { animation: heartIn .76s cubic-bezier(.6, 0, .4, 1) forwards; }
+.tx-heart.in.out .heart { animation: heartOut .65s cubic-bezier(.6, 0, .4, 1) forwards; }
+@keyframes heartIn {
+  0% { transform: scale(0); }
+  30% { transform: scale(2.6); }
+  42% { transform: scale(1.9); }
+  55% { transform: scale(3); }
+  100% { transform: scale(40); }
+}
+@keyframes heartOut { from { transform: scale(40); } to { transform: scale(0) rotate(20deg); } }
+.tx-heart .tx-label { color: #fff; font-family: "Lora", Georgia, serif; font-style: italic; text-shadow: 0 6px 30px rgba(120, 20, 40, .4); }
+.tx-heart.in .tx-label { animation-delay: .5s; }
+
+/* Финал: прыжок в гиперпространство */
+.tx-warp canvas { position: absolute; inset: 0; width: 100%; height: 100%; background: #08041a; opacity: 0; }
+.tx-warp.in canvas { animation: fadeInTx .25s ease forwards; }
+.tx-warp.in.out canvas { animation: fadeOutTx .5s ease .2s forwards; }
+.tx-warp::after { content: ""; position: absolute; inset: 0; z-index: 6; background: #fff; opacity: 0; pointer-events: none; }
+.tx-warp.in.out::after { animation: warpFlash .55s ease forwards; }
+@keyframes fadeInTx { to { opacity: 1; } }
+@keyframes fadeOutTx { from { opacity: 1; } to { opacity: 0; } }
+@keyframes warpFlash { 0% { opacity: 0; } 25% { opacity: .9; } 100% { opacity: 0; } }
+.tx-warp .tx-label { color: #ffe39a; text-shadow: 0 0 30px rgba(255, 210, 122, .7); letter-spacing: .06em; }
+
+/* =================================================================
+   ЗАГОЛОВКИ ИЗ РАЗЛЕТЕВШИХСЯ БУКВ
+   --k (0…1) ставит скрипт по прокрутке; у каждой буквы своя задержка --o
+   ================================================================= */
+.fly .fw { display: inline-block; white-space: nowrap; }
+.fly .ch {
+  display: inline-block;
+  --q: clamp(0, calc(1 - var(--k, 0) * 1.35 + var(--o, 0)), 1);
+  transform:
+    translate(calc(var(--tx) * var(--q)), calc(var(--ty) * var(--q)))
+    rotate(calc(var(--rz) * var(--q)))
+    scale(calc(1 + var(--sc) * var(--q)));
+  opacity: calc(1 - var(--q));
+  transition: transform .3s ease-out, opacity .3s ease-out;
+}
+/* Заголовок с .reveal теперь появляется за счёт букв, без лишнего сдвига */
+.split.reveal { transform: none; }
+
+/* =================================================================
+   ФОТО И ВИДЕО КАК ПОЛАРОИД: переворот в 3D + «проявление»
+   ================================================================= */
+.reveal.fx-polaroid {
+  opacity: 0; transform-origin: 50% 100%;
+  transform: perspective(1200px) translateY(70px) rotateX(62deg) rotateZ(-5deg) scale(.86);
+  transition: opacity .6s ease var(--d, 0s), transform 1.15s cubic-bezier(.2, 1.3, .35, 1) var(--d, 0s);
+}
+.reveal.fx-polaroid.from-left { transform: perspective(1200px) translateX(-50px) rotateY(70deg) rotateZ(-4deg) scale(.86); transform-origin: 0 50%; }
+.reveal.fx-polaroid.from-right { transform: perspective(1200px) translateX(50px) rotateY(-70deg) rotateZ(4deg) scale(.86); transform-origin: 100% 50%; }
+.reveal.fx-polaroid.in { opacity: 1; transform: none; }
+.sticker.reveal.fx-polaroid.in { transform: rotate(var(--r, 0deg)); }
+
+/* Снимок «проявляется»: из бледного и мутного — в яркий */
+.reveal.fx-polaroid img, .reveal.fx-polaroid video, .reveal.fx-develop img {
+  filter: sepia(.85) saturate(.35) brightness(1.55) contrast(.65) blur(7px);
+  transition: transform .12s linear, filter 1.9s cubic-bezier(.3, .6, .3, 1) calc(var(--d, 0s) + .35s);
+}
+.reveal.fx-polaroid.in img, .reveal.fx-polaroid.in video, .reveal.fx-develop.in img { filter: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fly .ch { transform: none; opacity: 1; filter: none; transition: none; }
+  .reveal.fx-polaroid, .reveal.fx-polaroid.from-left, .reveal.fx-polaroid.from-right { opacity: 1; transform: none; transition: none; }
+  .reveal.fx-polaroid img, .reveal.fx-polaroid video, .reveal.fx-develop img { filter: none; transition: none; }
+}
+/* Под сердцем — сплошной фон, чтобы на любом экране не было просветов по углам */
+.tx-heart::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, #ff9a76, #f0486a); opacity: 0; }
+.tx-heart.in::before { animation: fadeInTx .2s ease .58s forwards; }
+.tx-heart.in.out::before { animation: fadeOutTx .12s ease forwards; }
