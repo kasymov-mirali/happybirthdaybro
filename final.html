@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body class="theme-final" data-page="5" data-banner="УРА, 21 ГОД!" data-decor="✦,⭐,✨,✧,·">
   <main class="page">
@@ -24,6 +24,31 @@
         <span class="line reveal" style="--d:.6s">и никогда не грустила.</span>
       </p>
       <p class="one reveal" style="--d:.9s">И это только 1% того, что я тебе желаю.</p>
+    </section>
+
+    <!-- Торт: свечи задуваются в микрофон (или пальцем, если микрофон нельзя) -->
+    <section class="cake-stage reveal">
+      <h2>Сначала — загадай желание 🕯️</h2>
+      <p class="muted">и задуй свечи</p>
+      <div class="bcake" id="bcake">
+        <div class="candles">
+          <span class="candle" data-n="0"><i class="flame"></i></span>
+          <span class="candle" data-n="1"><i class="flame"></i></span>
+          <span class="candle num" data-n="2"><i class="flame"></i><em>2</em></span>
+          <span class="candle num" data-n="3"><i class="flame"></i><em>1</em></span>
+          <span class="candle" data-n="4"><i class="flame"></i></span>
+          <span class="candle" data-n="5"><i class="flame"></i></span>
+        </div>
+        <div class="tier t2"><i class="drip"></i></div>
+        <div class="tier t1"><i class="drip"></i></div>
+        <div class="plate"></div>
+      </div>
+      <div class="blow-ui">
+        <button id="blow" class="btn" type="button">🎤 Задуть в микрофон</button>
+        <p class="blow-hint muted">или нажимай на свечи пальцем</p>
+        <div class="blow-meter" aria-hidden="true"><i></i></div>
+      </div>
+      <p class="wish-done">Желание загадано и уже в пути ✨<br><small>а теперь — подарок 👇</small></p>
     </section>
 
     <section class="gift-stage zoom-in">
@@ -94,6 +119,6 @@
       <button id="ds-final" class="btn" type="button">Ну что, пошли в дс? 💜</button>
     </section>
   </main>
-  <script src="js/main.js?v=16"></script>
+  <script src="js/main.js?v=18"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body class="theme-valo" data-page="1" data-banner="GG WP · LVL 21" data-decor="✚,◆,☠,✦,⌖">
   <main class="page">
@@ -29,8 +29,26 @@
 
     <div class="ticker" data-text="ACE ✦ ВАНТАПЫ ✦ ИДЕАЛЬНЫЙ СПРЕЙ ✦ VIPER MAIN ✦ DIAMOND 1 ✦ ТИММЕЙТЫ, УЧИТЕСЬ ✦"></div>
 
+    <!-- Разминка: пока не попадёшь по всем мишеням, хайлайты закрыты -->
+    <section class="aim reveal" id="aim">
+      <span class="kicker">// разминка перед хайлайтами</span>
+      <h2>Попади по <span class="aim-goal">15</span> мишеням — и хайлайты твои</h2>
+      <div class="arena" id="arena">
+        <div class="arena-hud">
+          <span>🎯 <b id="aim-hits">0</b>/<span class="aim-goal">15</span></span>
+          <span>⏱ <b id="aim-time">0.0</b> с</span>
+          <span>точность <b id="aim-acc">—</b></span>
+        </div>
+        <div class="arena-start">
+          <p>Мишени появляются и исчезают. Жми быстрее, чем они пропадут.</p>
+          <button class="btn" id="aim-start" type="button">Начать разминку</button>
+        </div>
+      </div>
+      <p class="aim-result" aria-live="polite"></p>
+    </section>
+
     <!-- Подписи к видео можно менять как угодно: .clip-tag — плашка, figcaption — текст под видео -->
-    <section class="grid2">
+    <section class="grid2 vault">
       <figure class="clip reveal">
         <div class="clip-tag">Эйс</div>
         <div class="frame"><video src="media/S01_V1.mp4" poster="media/S01_V1_poster.jpg" width="1280" height="720" controls playsinline preload="none"></video></div>
@@ -74,7 +92,7 @@
       </figure>
     </section>
 
-    <section class="reveal">
+    <section class="reveal vault">
       <span class="kicker">// пруфы</span>
       <figure class="clip" style="max-width:820px">
         <div class="frame"><img class="zoomable" src="media/S01_V8.jpg" alt="Таблица счёта матча" width="1112" height="656" loading="lazy"></div>
@@ -96,6 +114,6 @@
       <a class="btn" href="memes.html">дальше →</a>
     </div>
   </main>
-  <script src="js/main.js?v=16"></script>
+  <script src="js/main.js?v=18"></script>
 </body>
 </html>

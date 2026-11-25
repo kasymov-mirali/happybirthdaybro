@@ -7,6 +7,11 @@
   const KEY = "mili-family-v1";          // отметка «вход выполнен» (до закрытия вкладки)
   const SECRET = "семья";                // секретное слово: мы друг другу семья
   const MUSIC_KEY = "mili-music";        // включена ли музыка
+  // Когда сайт открывается (по времени её телефона): 14 декабря 2026, 00:00.
+  // Посмотреть раньше: открыть сайт с ?preview в адресе (index.html?preview)
+  const OPEN_AT = new Date(2026, 11, 14, 0, 0, 0).getTime();
+  const AIM_KEY = "mili-aim";            // результат разминки (хайлайты открыты)
+  const AIM_GOAL = 15;                   // сколько мишеней надо сбить
   const ORDER = ["index.html", "valorant.html", "memes.html", "characters.html", "bro.html", "final.html"];
   // Переход на каждую страницу: свой эффект (k), цвет (c) и надпись (t)
   //   glitch — помехи как в игре, bam — комикс-взрыв, sakura — вихрь лепестков,
@@ -31,6 +36,8 @@
     set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* приватный режим — не страшно */ } },
   };
   const loggedIn = () => ss.get(KEY) === "1";
+  if (/[?&]preview\b/.test(location.search)) ss.set("mili-preview", "1");
+  const isOpen = () => Date.now() >= OPEN_AT || loggedIn() || ss.get("mili-preview") === "1";
   try { localStorage.removeItem("mili-bro-v1"); } catch (e) { /* старый вход по «бро» больше не нужен */ }
 
   /* =================================================================
@@ -332,6 +339,7 @@
   function teardown() {
     if (!P) return;
     if (P.ro) P.ro.disconnect();
+    P.cleanups.forEach((fn) => { try { fn(); } catch (e) { /* уже убрано */ } });
     P.extra.forEach((el) => el.remove());
     const bar = document.querySelector(".topbar");
     if (bar) bar.remove();
@@ -423,10 +431,266 @@
     el.querySelectorAll("[data-count]").forEach(countUp);
   }
 
+  /* =================================================================
+     ОБРАТНЫЙ ОТСЧЁТ (до 14 декабря вместо входа — таймер)
+     ================================================================= */
+  function setupCountdown(cd) {
+    body.classList.add("waiting");
+    const cells = {};
+    cd.querySelectorAll("[data-cd]").forEach((b) => { cells[b.dataset.cd] = b; });
+    const pad = (n) => String(n).padStart(2, "0");
+    let timer = 0;
+    const tick = () => {
+      const ms = OPEN_AT - Date.now();
+      if (ms <= 0) {
+        // Время пришло — убираем таймер, показываем вход
+        clearInterval(timer);
+        body.classList.remove("waiting");
+        confetti();
+        toast("Время пришло! 🎉", 2600);
+        return;
+      }
+      const s = Math.floor(ms / 1000);
+      const v = { d: Math.floor(s / 86400), h: Math.floor(s / 3600) % 24, m: Math.floor(s / 60) % 60, s: s % 60 };
+      for (const k in v) {
+        const txt = pad(v[k]);
+        if (cells[k] && cells[k].textContent !== txt) {
+          cells[k].textContent = txt;
+          cells[k].classList.remove("flip");
+          void cells[k].offsetWidth; // перезапуск анимации
+          cells[k].classList.add("flip");
+        }
+      }
+    };
+    tick();
+    timer = setInterval(tick, 1000);
+    P.cleanups.push(() => clearInterval(timer));
+  }
+
+  /* =================================================================
+     РАЗМИНКА: сбей мишени — откроются хайлайты
+     ================================================================= */
+  function setupAim(aim) {
+    const LIFE = 1500; // сколько живёт мишень, мс
+    const arena = aim.querySelector("#arena");
+    const startBox = arena.querySelector(".arena-start");
+    const startBtn = aim.querySelector("#aim-start");
+    const hitsEl = aim.querySelector("#aim-hits");
+    const timeEl = aim.querySelector("#aim-time");
+    const accEl = aim.querySelector("#aim-acc");
+    const resEl = aim.querySelector(".aim-result");
+    aim.querySelectorAll(".aim-goal").forEach((s) => { s.textContent = AIM_GOAL; });
+    let hits = 0, shots = 0, t0 = 0, playing = false, target = null;
+
+    const hud = () => {
+      hitsEl.textContent = hits;
+      accEl.textContent = shots ? Math.round((hits / shots) * 100) + "%" : "—";
+    };
+    const rank = (t) => t < 14 ? "Радиант 👑" : t < 20 ? "Иммортал 🔥" : t < 28 ? "Даймонд 💎" : "Даймонд, просто разогревалась 😏";
+
+    function showResult(res, fresh) {
+      resEl.innerHTML = `<b>${rank(res.time)}</b> · ${res.time.toFixed(1)} с · точность ${res.acc}%`;
+      timeEl.textContent = res.time.toFixed(1);
+      arena.classList.add("done");
+      startBox.querySelector("p").textContent = "Хайлайты открыты ✅ Хочешь побить свой рекорд?";
+      startBtn.textContent = "Сыграть ещё";
+      body.classList.remove("aim-locked");
+      if (fresh) {
+        confetti(["#3dff8f", "#00d4ff", "#a6ff00", "#ffffff"], 160);
+        toast("Хайлайты открыты 🔓", 2200);
+        setTimeout(() => {
+          measure();
+          const v = document.querySelector("main .vault");
+          if (v) v.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+        }, 900);
+      } else {
+        measure();
+      }
+    }
+
+    function spawn() {
+      if (target) target.remove();
+      const r = arena.getBoundingClientRect();
+      const size = clamp(r.width * 0.16, 48, 76);
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "target";
+      el.setAttribute("aria-label", "Мишень");
+      el.style.width = el.style.height = size + "px";
+      el.style.left = rnd(8, r.width - size - 8).toFixed(0) + "px";
+      el.style.top = rnd(52, r.height - size - 8).toFixed(0) + "px";
+      el.style.setProperty("--life", LIFE + "ms");
+      // Не успела — мишень исчезает, появляется новая
+      el.addEventListener("animationend", (e) => { if (e.target === el && target === el && playing) spawn(); });
+      arena.append(el);
+      target = el;
+    }
+
+    function pop(x, y, text, cls) {
+      const s = document.createElement("span");
+      s.className = "aim-pop " + cls;
+      s.textContent = text;
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      arena.append(s);
+      setTimeout(() => s.remove(), 700);
+    }
+
+    function finish() {
+      playing = false;
+      arena.classList.remove("playing");
+      if (target) { target.remove(); target = null; }
+      const res = { time: (performance.now() - t0) / 1000, acc: Math.round((hits / Math.max(1, shots)) * 100) };
+      const prev = JSON.parse(ss.get(AIM_KEY) || "null");
+      if (!prev || res.time < prev.time) ss.set(AIM_KEY, JSON.stringify(res));
+      showResult(res, true);
+    }
+
+    function start() {
+      hits = 0; shots = 0; hud();
+      arena.classList.add("playing");
+      arena.classList.remove("done");
+      resEl.textContent = "";
+      playing = true;
+      t0 = performance.now();
+      spawn();
+      (function loop() {
+        if (!playing || !arena.isConnected) return;
+        timeEl.textContent = ((performance.now() - t0) / 1000).toFixed(1);
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    startBtn.addEventListener("click", start);
+    arena.addEventListener("pointerdown", (e) => {
+      if (!playing) return;
+      const r = arena.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      shots++;
+      const t = e.target.closest(".target");
+      if (t && t === target) {
+        hits++;
+        pop(x, y, Math.random() < 0.25 ? "HEADSHOT" : "+1", "hit");
+        Music.pop();
+        if (hits >= AIM_GOAL) finish(); else spawn();
+      } else {
+        pop(x, y, "мимо", "miss");
+      }
+      hud();
+    });
+
+    const saved = JSON.parse(ss.get(AIM_KEY) || "null");
+    if (saved) showResult(saved, false);
+    else body.classList.add("aim-locked");
+    P.cleanups.push(() => { playing = false; body.classList.remove("aim-locked"); });
+  }
+
+  /* =================================================================
+     ТОРТ: задуть свечи в микрофон (или пальцем)
+     ================================================================= */
+  function setupCake(stage) {
+    const candles = [...stage.querySelectorAll(".candle")];
+    const btn = stage.querySelector("#blow");
+    const hint = stage.querySelector(".blow-hint");
+    const meter = stage.querySelector(".blow-meter i");
+    let left = candles.length, done = false;
+    let stream = null, actx = null, raf = 0;
+
+    function stopMic() {
+      cancelAnimationFrame(raf);
+      if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
+      if (actx) { actx.close().catch(() => {}); actx = null; }
+      stage.classList.remove("listening", "wind");
+      Music.duck(false);
+    }
+
+    function blowOut(c) {
+      if (done || c.classList.contains("out")) return;
+      c.classList.add("out");
+      left--;
+      if (left === 0) finish();
+    }
+
+    function finish() {
+      done = true;
+      stopMic();
+      setTimeout(() => {
+        stage.classList.add("blown");
+        confetti(["#ffd27a", "#ff8fc7", "#c79bff", "#ffffff"], 170);
+        toast("Желание загадано ✨", 2400);
+        measure();
+      }, 450);
+    }
+
+    candles.forEach((c) => c.addEventListener("click", () => blowOut(c)));
+
+    btn.addEventListener("click", async () => {
+      if (done || stream) return;
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        hint.textContent = "Микрофон тут не работает — задувай пальцем 👆";
+        return;
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: false } });
+      } catch (e) {
+        hint.textContent = "Без микрофона тоже можно — нажимай на свечи 👆";
+        return;
+      }
+      if (done || !stage.isConnected) { stopMic(); return; }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      actx = new AC();
+      const an = actx.createAnalyser();
+      an.fftSize = 1024;
+      actx.createMediaStreamSource(stream).connect(an);
+      const buf = new Uint8Array(an.fftSize);
+      stage.classList.add("listening");
+      btn.textContent = "Дуй! 🌬️";
+      hint.textContent = "секунду, слушаю тишину… 🤫";
+      Music.duck(true); // музыку потише, чтобы не мешала
+      let frames = 0, noise = 0, power = 0;
+      (function loop() {
+        if (done || !stage.isConnected) { stopMic(); return; }
+        an.getByteTimeDomainData(buf);
+        let sum = 0;
+        for (let i = 0; i < buf.length; i++) { const x = (buf[i] - 128) / 128; sum += x * x; }
+        const rms = Math.sqrt(sum / buf.length);
+        frames++;
+        // Первые ~0,5 с слушаем тишину в комнате — от неё считаем порог
+        if (frames === 31) hint.textContent = "дуй на экран — можно легонько 🌬️";
+        if (frames <= 30) {
+          noise = Math.max(noise, rms);
+          meter.style.transform = "scaleX(0)";
+          raf = requestAnimationFrame(loop);
+          return;
+        }
+        // Порог низкий: хватает лёгкого дуновения, но шум комнаты не считается
+        const thr = Math.max(0.018, Math.min(noise * 1.8, 0.05)); // сверху ограничен — если дула сразу
+        const force = Math.min(1, (rms - thr) / (thr * 3)); // 0…1 — насколько сильно дует
+        meter.style.transform = `scaleX(${Math.min(1, Math.max(0, rms / (thr * 2.5))).toFixed(3)})`;
+        if (rms > thr) {
+          stage.classList.add("wind");
+          // Копим «силу ветра»: чем сильнее дует, тем быстрее гаснут свечи
+          power += 0.35 + force;
+          if (power >= 4) {
+            power = 0;
+            const lit = candles.filter((c) => !c.classList.contains("out"));
+            if (lit.length) blowOut(lit[(Math.random() * lit.length) | 0]);
+          }
+        } else {
+          power = Math.max(0, power - 0.15);
+          stage.classList.remove("wind");
+        }
+        raf = requestAnimationFrame(loop);
+      })();
+    });
+
+    P.cleanups.push(() => { done = true; stopMic(); });
+  }
+
   function init() {
     teardown();
     const pageNum = Number(body.dataset.page) || 0;
-    P = { pending: [], ro: null, extra: [], fill: null, decor: null, tilts: [], zooms: [], scrubs: [], hs: [], para: [], flys: [] };
+    P = { pending: [], ro: null, extra: [], fill: null, decor: null, tilts: [], zooms: [], scrubs: [], hs: [], para: [], flys: [], cleanups: [] };
     const main = document.querySelector("main");
 
     /* ---------- Верхняя панель с прогрессом ---------- */
@@ -574,6 +838,18 @@
         }
       });
     }
+
+    /* ---------- Обратный отсчёт до дня рождения ---------- */
+    const cd = main.querySelector(".countdown");
+    if (cd && !isOpen()) setupCountdown(cd);
+
+    /* ---------- Разминка на странице хайлайтов ---------- */
+    const aim = main.querySelector("#aim");
+    if (aim) setupAim(aim);
+
+    /* ---------- Торт со свечами ---------- */
+    const cakeStage = main.querySelector(".cake-stage");
+    if (cakeStage) setupCake(cakeStage);
 
     measure();
     if ("ResizeObserver" in window) {

@@ -10,11 +10,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body class="theme-cover" data-banner="С ДНЁМ РОЖДЕНИЯ" data-decor="✨,🎈,💜,⭐,🎉,✦">
   <main class="cover">
     <div class="glass">
+      <!-- Обратный отсчёт: виден до 14 декабря, потом сам исчезает и появляется вход -->
+      <div class="countdown" aria-live="polite">
+        <div class="cake-wrap"><div class="cake" aria-hidden="true">🎁</div></div>
+        <h1 class="shine">Мили Броуски, тут кое-что для тебя</h1>
+        <p class="cd-sub">Откроется 14 декабря. Ни секундой раньше 😏</p>
+        <div class="cd-grid">
+          <div class="cd-cell"><b data-cd="d">00</b><span>дней</span></div>
+          <div class="cd-cell"><b data-cd="h">00</b><span>часов</span></div>
+          <div class="cd-cell"><b data-cd="m">00</b><span>минут</span></div>
+          <div class="cd-cell"><b data-cd="s">00</b><span>секунд</span></div>
+        </div>
+        <p class="cd-note">сохрани ссылку и возвращайся 🎂</p>
+      </div>
+
       <div class="gate-wrap">
         <div class="cake-wrap"><div class="cake" aria-hidden="true">🎂</div></div>
         <h1 class="shine">Мили Броуски, это для тебя</h1>
@@ -34,6 +48,6 @@
       </div>
     </div>
   </main>
-  <script src="js/main.js?v=16"></script>
+  <script src="js/main.js?v=18"></script>
 </body>
 </html>
