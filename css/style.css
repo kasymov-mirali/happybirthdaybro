@@ -1366,3 +1366,11 @@ body { --f0: #ff6fae; --f1: #ffd27a; --f2: #8f6bff; --f3: #3dff9c; }
 .snake-pad [data-d="right"] { grid-column: 3; grid-row: 2; }
 .snake-hint { margin: 0; font-size: 14px; color: #b9a8dc; }
 @media (pointer: fine) { .snake-pad { display: none; } .snake-hint::after { content: " · на компьютере — стрелки, пробел = пауза"; } }
+/* Кнопка паузы в змейке */
+.sn-pause {
+  margin-left: auto; width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(61, 255, 156, .5); background: rgba(61, 255, 156, .15); color: #fff; font-size: 17px;
+}
+.sn-pause:disabled { opacity: .35; cursor: default; }
+.sn-pause.on { background: #3dff9c; color: #170b2e; }
+.sn-pause + .sn-close { margin-left: 0; }

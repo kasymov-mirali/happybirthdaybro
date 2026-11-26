@@ -643,6 +643,7 @@
       <div class="snake-top">
         <span>🍰 <b class="sn-score">0</b></span>
         <span>🏆 <b class="sn-best">0</b></span>
+        <button class="sn-pause" type="button" aria-label="Пауза" disabled>⏸</button>
         <button class="sn-close" type="button" aria-label="Закрыть">✕</button>
       </div>
       <div class="snake-board">
@@ -668,6 +669,7 @@
     const scoreEl = scr.querySelector(".sn-score");
     const bestEl = scr.querySelector(".sn-best");
     const startBtn = scr.querySelector(".sn-start");
+    const pauseBtn = scr.querySelector(".sn-pause");
     const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 
     let snake, dir, queue, food, score, step, timer = 0, alive = false, paused = false, cell = 20, popT = 0;
@@ -703,7 +705,7 @@
     }
 
     function turn(d) {
-      if (!alive) return;
+      if (!alive || paused) return;
       // Очередь из двух поворотов — чтобы быстрые свайпы не терялись
       const last = queue.length ? queue[queue.length - 1] : dir;
       const [a, b] = DIRS[d], [c, e] = DIRS[last];
@@ -747,15 +749,39 @@
       msg.querySelector(".sn-start").addEventListener("click", start);
       msg.hidden = false;
       if (record && score > 0) confetti(["#3dff9c", "#a855ff", "#ffd27a", "#ffffff"], 90);
+      paused = false; syncPause();
     }
 
     function start() {
       reset();
       msg.hidden = true;
       alive = true; paused = false;
+      syncPause();
       draw();
       clearTimeout(timer);
       timer = setTimeout(tick, step);
+    }
+
+    // Пауза: кнопка ⏸ сверху, пробел на компьютере, или сама — если свернуть вкладку
+    function syncPause() {
+      pauseBtn.disabled = !alive;
+      pauseBtn.textContent = paused ? "▶" : "⏸";
+      pauseBtn.setAttribute("aria-label", paused ? "Продолжить" : "Пауза");
+      pauseBtn.classList.toggle("on", paused);
+    }
+    function setPause(on) {
+      if (!alive) return;
+      paused = on;
+      clearTimeout(timer);
+      if (paused) {
+        msg.innerHTML = `<h2>Пауза ⏸</h2><p>Собрано: <b>${score}</b>. Змейка ждёт 🐍</p><button class="btn sn-resume" type="button">Продолжить</button>`;
+        msg.querySelector(".sn-resume").addEventListener("click", () => setPause(false));
+        msg.hidden = false;
+      } else {
+        msg.hidden = true;
+        timer = setTimeout(tick, step + 250); // маленькая фора, чтобы успеть сориентироваться
+      }
+      syncPause();
     }
 
     function draw(dead) {
@@ -802,7 +828,7 @@
       if (!snake) { reset(); draw(); }
     }
     function close() {
-      alive = false;
+      alive = false; paused = false; syncPause();
       clearTimeout(timer);
       scr.classList.remove("open");
       document.documentElement.classList.remove("snake-lock");
@@ -813,6 +839,7 @@
 
     openBtn.addEventListener("click", open);
     scr.querySelector(".sn-close").addEventListener("click", close);
+    pauseBtn.addEventListener("click", () => setPause(!paused));
     startBtn.addEventListener("click", start);
     scr.querySelectorAll(".snake-pad button").forEach((b) => b.addEventListener("pointerdown", (e) => { e.preventDefault(); turn(b.dataset.d); }));
 
@@ -833,7 +860,7 @@
     const onKey = (e) => {
       if (!scr.classList.contains("open")) return;
       if (e.key === "Escape") return close();
-      if (e.key === " " && alive) { e.preventDefault(); paused = !paused; if (paused) clearTimeout(timer); else timer = setTimeout(tick, step); return; }
+      if (e.key === " " && alive) { e.preventDefault(); setPause(!paused); return; }
       if (e.key === "Enter" && !alive) return start();
       const d = KEYS[e.key] || KEYS[e.key.toLowerCase()];
       if (d) { e.preventDefault(); turn(d); }
@@ -841,7 +868,8 @@
     addEventListener("keydown", onKey);
     addEventListener("resize", fit);
     // Свернула вкладку — пауза
-    const onHide = () => { if (document.hidden && alive && !paused) { paused = true; clearTimeout(timer); } else if (!document.hidden && alive && paused) { paused = false; timer = setTimeout(tick, step); } };
+    // Свернула вкладку — ставим на паузу; продолжить можно кнопкой
+    const onHide = () => { if (document.hidden && alive && !paused) setPause(true); };
     document.addEventListener("visibilitychange", onHide);
 
     P.cleanups.push(() => {
