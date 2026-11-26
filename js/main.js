@@ -486,10 +486,40 @@
       hitsEl.textContent = hits;
       accEl.textContent = shots ? Math.round((hits / shots) * 100) + "%" : "—";
     };
-    const rank = (t) => t < 14 ? "Радиант 👑" : t < 20 ? "Иммортал 🔥" : t < 28 ? "Даймонд 💎" : "Даймонд, просто разогревалась 😏";
+    // Ранги: нужно уложиться И по времени, И по точности. Берётся самый высокий подходящий.
+    const RANKS = [
+      { name: "Радиант 👑", time: 14, acc: 90 },
+      { name: "Иммортал 🔥", time: 18, acc: 80 },
+      { name: "Асцендант 💚", time: 23, acc: 70 },
+      { name: "Даймонд 💎", time: 30, acc: 55 },
+      { name: "Платина 🩵", time: 40, acc: 40 },
+      { name: "Голд ✨", time: Infinity, acc: 0 },
+    ];
+    const rankIdx = (res) => RANKS.findIndex((r) => res.time <= r.time && res.acc >= r.acc);
+    // Что лучше: ранг выше, а при равном ранге — быстрее
+    const better = (a, b) => !b || rankIdx(a) < rankIdx(b) || (rankIdx(a) === rankIdx(b) && a.time < b.time);
 
-    function showResult(res, fresh) {
-      resEl.innerHTML = `<b>${rank(res.time)}</b> · ${res.time.toFixed(1)} с · точность ${res.acc}%`;
+    // Таблица рангов под игрой — видно, к чему стремиться
+    const table = document.createElement("div");
+    table.className = "rank-table";
+    table.innerHTML = RANKS.map((r) =>
+      `<div class="rank-row"><span>${r.name}</span><span>${r.time === Infinity ? "любое время" : "≤ " + r.time + " с"}</span><span>${r.acc ? "≥ " + r.acc + "%" : "любая"}</span></div>`
+    ).join("");
+    resEl.after(table);
+
+    function showResult(res, fresh, best) {
+      const i = rankIdx(res);
+      let html = `<b>${RANKS[i].name}</b> · ${res.time.toFixed(1)} с · точность ${res.acc}%`;
+      // Подсказка, чего не хватило до следующего ранга
+      if (i > 0) {
+        const up = RANKS[i - 1], need = [];
+        if (res.time > up.time) need.push(`быстрее ${up.time} с`);
+        if (res.acc < up.acc) need.push(`точность от ${up.acc}%`);
+        html += `<small>до ${up.name}: ${need.join(" и ")}</small>`;
+      }
+      if (best && best !== res) html += `<small>рекорд: ${RANKS[rankIdx(best)].name} · ${best.time.toFixed(1)} с · ${best.acc}%</small>`;
+      resEl.innerHTML = html;
+      table.querySelectorAll(".rank-row").forEach((row, k) => row.classList.toggle("got", k === rankIdx(best || res)));
       timeEl.textContent = res.time.toFixed(1);
       arena.classList.add("done");
       startBox.querySelector("p").textContent = "Хайлайты открыты ✅ Хочешь побить свой рекорд?";
@@ -542,8 +572,14 @@
       if (target) { target.remove(); target = null; }
       const res = { time: (performance.now() - t0) / 1000, acc: Math.round((hits / Math.max(1, shots)) * 100) };
       const prev = JSON.parse(ss.get(AIM_KEY) || "null");
-      if (!prev || res.time < prev.time) ss.set(AIM_KEY, JSON.stringify(res));
-      showResult(res, true);
+      const best = better(res, prev) ? res : prev;
+      if (best === res) ss.set(AIM_KEY, JSON.stringify(res));
+      // Первый раз — открываем хайлайты (конфетти и прокрутка к ним); повтор — только результат
+      showResult(res, !prev, best);
+      if (prev) {
+        confetti(["#3dff8f", "#00d4ff", "#a6ff00", "#ffffff"], 90);
+        toast(best === res ? "Новый рекорд! 🏆" : "Рекорд пока держится 😏", 2000);
+      }
     }
 
     function start() {
@@ -580,7 +616,7 @@
     });
 
     const saved = JSON.parse(ss.get(AIM_KEY) || "null");
-    if (saved) showResult(saved, false);
+    if (saved) showResult(saved, false, saved);
     else body.classList.add("aim-locked");
     P.cleanups.push(() => { playing = false; body.classList.remove("aim-locked"); });
   }
@@ -1269,11 +1305,16 @@
       setTimeout(spawn, 4500 + Math.random() * 4500);
     };
     setTimeout(spawn, 2500);
-    // Лопнуть шарик
-    layer.addEventListener("pointerdown", (e) => {
-      const b = e.target.closest(".balloon");
-      if (!b || b.classList.contains("popped")) return;
-      e.stopPropagation();
+    // Лопнуть шарик. Шарики лежат ПОД контентом (это фон), поэтому ловим касание на всей
+    // странице и проверяем, попало ли оно в шарик. Кнопки, видео, фото и игра — в приоритете.
+    document.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("a, button, input, video, .zoomable, .arena, .peek, .lightbox, .vol-box")) return;
+      const b = [...layer.querySelectorAll(".balloon:not(.popped)")].find((el) => {
+        const rr = el.getBoundingClientRect();
+        const pad = 8; // чуть шире самого шарика — легче попасть пальцем
+        return e.clientX > rr.left - pad && e.clientX < rr.right + pad && e.clientY > rr.top - pad && e.clientY < rr.bottom + pad;
+      });
+      if (!b) return;
       const r = b.getBoundingClientRect();
       b.classList.add("popped");
       Music.pop();

@@ -32,7 +32,9 @@ a { color: inherit; }
   position: relative; z-index: 1;
   max-width: 1080px;
   margin: 0 auto;
-  padding: calc(78px + env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom));
+  /* Снизу запас 110px: там закреплены кнопка музыки и ползунок громкости —
+     иначе в самом конце страницы они накрывают кнопку перехода */
+  padding: calc(78px + env(safe-area-inset-top)) 14px calc(110px + env(safe-area-inset-bottom));
 }
 @media (min-width: 600px) { .page { padding-left: 28px; padding-right: 28px; } }
 section { margin: 0 0 64px; }
@@ -122,7 +124,7 @@ section { margin: 0 0 64px; }
 }
 .btn:active { transform: scale(.96); }
 .btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
-.next { display: flex; justify-content: center; padding: 16px 0 8px; }
+.next { display: flex; justify-content: center; padding: 16px 0 8px; } /* всегда видна — не зависит от анимации появления */
 .next .btn { width: 100%; max-width: 440px; }
 
 /* ============ Появление при прокрутке ============ */
@@ -927,14 +929,13 @@ body { --f0: #ff6fae; --f1: #ffd27a; --f2: #8f6bff; --f3: #3dff9c; }
 @keyframes flagSway { 50% { transform: rotate(6deg); } }
 
 /* Воздушные шарики */
-.balloons { position: fixed; inset: 0; z-index: 45; pointer-events: none; overflow: hidden; }
+.balloons { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; } /* фон: под текстом и фото */
 .balloon {
   position: absolute; bottom: -140px;
   width: calc(52px * var(--s)); height: calc(64px * var(--s));
   border-radius: 50% 50% 48% 52% / 58% 58% 42% 42%;
   background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .75) 0 7%, transparent 22%), var(--c);
   box-shadow: inset -6px -8px 14px rgba(0, 0, 0, .18);
-  pointer-events: auto; cursor: pointer;
   animation: balloonUp var(--dur) linear forwards, balloonSway 3s ease-in-out infinite alternate;
 }
 .balloon::before { /* узелок */
@@ -1226,6 +1227,13 @@ body { --f0: #ff6fae; --f1: #ffd27a; --f2: #8f6bff; --f3: #3dff9c; }
   80% { opacity: 1; }
   100% { transform: scale(.35); opacity: 0; }
 }
+/* Если на устройстве включено «уменьшить анимацию», общее правило делает все анимации
+   мгновенными — мишень бы исчезала сразу. Её «жизнь» — это игра, поэтому оставляем
+   полную длительность, только без прыжка: просто плавно гаснет */
+@media (prefers-reduced-motion: reduce) {
+  .target { animation: targetFade var(--life, 1500ms) linear forwards !important; }
+}
+@keyframes targetFade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
 .aim-pop {
   position: absolute; z-index: 4; pointer-events: none; translate: -50% -50%;
   font: 900 18px/1 "Unbounded", sans-serif; white-space: nowrap;
@@ -1236,6 +1244,17 @@ body { --f0: #ff6fae; --f1: #ffd27a; --f2: #8f6bff; --f3: #3dff9c; }
 @keyframes aimPop { from { opacity: 1; transform: translateY(0) scale(.8); } to { opacity: 0; transform: translateY(-40px) scale(1.2); } }
 .aim-result { margin-top: 14px; font-size: 20px; text-align: center; color: var(--muted); }
 .aim-result b { color: var(--accent); }
+.aim-result small { display: block; margin-top: 4px; font-size: 15px; opacity: .85; }
+
+/* Таблица рангов: время + точность */
+.rank-table {
+  margin: 16px auto 0; max-width: 440px; padding: 8px; border-radius: 16px;
+  background: rgba(0, 0, 0, .25); border: 1px solid rgba(61, 255, 143, .2);
+  font-size: 15px; font-weight: 700;
+}
+.rank-row { display: grid; grid-template-columns: 1.6fr 1fr .8fr; gap: 6px; padding: 7px 10px; border-radius: 10px; color: var(--muted); }
+.rank-row span:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.rank-row.got { color: #0b2a22; background: linear-gradient(90deg, #3dff9c, #a6ff00); box-shadow: 0 0 18px rgba(61, 255, 143, .45); }
 
 /* Пока разминка не пройдена — хайлайты под замком */
 .aim-locked .vault {
