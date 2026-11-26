@@ -1321,3 +1321,48 @@ body { --f0: #ff6fae; --f1: #ffd27a; --f2: #8f6bff; --f3: #3dff9c; }
 .blown .wish-done { display: block; animation: pop .7s ease both; }
 .blown .bcake { animation: cakeHop .6s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes cakeHop { 40% { transform: translateY(-14px) scale(1.04); } }
+
+/* =================================================================
+   ЗМЕЙКА — отдельный экран на время обратного отсчёта
+   ================================================================= */
+.snake-open { margin-top: 22px; }
+.snake-lock, .snake-lock body { overflow: hidden; }
+.snake-screen {
+  position: fixed; inset: 0; z-index: 250;
+  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  background: radial-gradient(circle at 50% 20%, #3a1872 0%, #1d0d3d 55%, #0b2a22 100%);
+  color: #f3ecff; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.snake-screen.open { display: flex; animation: pop .45s ease both; }
+.snake-top { display: flex; align-items: center; gap: 18px; width: 100%; max-width: 520px; font: 800 20px/1 "Nunito", sans-serif; }
+.snake-top b { font-family: "Unbounded", sans-serif; color: #3dff9c; font-variant-numeric: tabular-nums; }
+.sn-close {
+  margin-left: auto; width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .1); color: #fff; font-size: 18px;
+}
+.snake-board { position: relative; border-radius: 18px; padding: 6px; background: rgba(0, 0, 0, .35);
+  border: 2px solid rgba(61, 255, 156, .45); box-shadow: 0 0 40px rgba(168, 85, 255, .35), 0 0 18px rgba(61, 255, 156, .2); }
+.snake-board canvas { display: block; border-radius: 12px; touch-action: none; }
+.snake-msg {
+  position: absolute; inset: 6px; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: 18px; text-align: center; background: rgba(20, 8, 44, .78); backdrop-filter: blur(3px);
+}
+.snake-msg[hidden] { display: none; }
+.snake-msg h2 { margin: 0 0 4px; font-size: clamp(20px, 6vw, 28px); }
+.snake-msg p { margin: 0 0 12px; color: #dccdf7; font-size: 17px; }
+.snake-msg b { color: #ffd27a; }
+.snake-pad { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(2, 52px); gap: 8px; }
+.snake-pad button {
+  border: 0; border-radius: 14px; cursor: pointer; font-size: 20px; color: #fff;
+  background: linear-gradient(135deg, rgba(168, 85, 255, .55), rgba(61, 255, 156, .35));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .3); touch-action: manipulation;
+}
+.snake-pad button:active { transform: scale(.92); }
+.snake-pad [data-d="up"] { grid-column: 2; grid-row: 1; }
+.snake-pad [data-d="left"] { grid-column: 1; grid-row: 2; }
+.snake-pad [data-d="down"] { grid-column: 2; grid-row: 2; }
+.snake-pad [data-d="right"] { grid-column: 3; grid-row: 2; }
+.snake-hint { margin: 0; font-size: 14px; color: #b9a8dc; }
+@media (pointer: fine) { .snake-pad { display: none; } .snake-hint::after { content: " · на компьютере — стрелки, пробел = пауза"; } }

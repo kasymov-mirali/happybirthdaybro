@@ -624,6 +624,236 @@
   /* =================================================================
      ТОРТ: задуть свечи в микрофон (или пальцем)
      ================================================================= */
+  /* =================================================================
+     ЗМЕЙКА: отдельный экран, пока идёт обратный отсчёт
+     Телефон — свайпы или кнопки-стрелки, компьютер — стрелки/WASD, пробел — пауза
+     ================================================================= */
+  function setupSnake(openBtn) {
+    const N = 17;                          // клеток по стороне
+    const FOODS = ["🎁", "🎂", "🍰", "🎈", "🧁", "🍬"];
+    const BEST_KEY = "mili-snake-best";    // рекорд — запоминается между заходами
+    const getBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (e) { return 0; } };
+    const setBest = (v) => { try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) { /* приватный режим */ } };
+
+    const scr = document.createElement("div");
+    scr.className = "snake-screen";
+    scr.setAttribute("role", "dialog");
+    scr.setAttribute("aria-label", "Змейка");
+    scr.innerHTML = `
+      <div class="snake-top">
+        <span>🍰 <b class="sn-score">0</b></span>
+        <span>🏆 <b class="sn-best">0</b></span>
+        <button class="sn-close" type="button" aria-label="Закрыть">✕</button>
+      </div>
+      <div class="snake-board">
+        <canvas></canvas>
+        <div class="snake-msg">
+          <h2>Змейка-именинница 🐍</h2>
+          <p>Собирай подарки и торты. Не врезайся в себя и в стены.</p>
+          <button class="btn sn-start" type="button">Играть</button>
+        </div>
+      </div>
+      <div class="snake-pad" aria-label="Управление">
+        <button type="button" data-d="up" aria-label="Вверх">▲</button>
+        <button type="button" data-d="left" aria-label="Влево">◀</button>
+        <button type="button" data-d="down" aria-label="Вниз">▼</button>
+        <button type="button" data-d="right" aria-label="Вправо">▶</button>
+      </div>
+      <p class="snake-hint">свайпай по полю или жми стрелки</p>`;
+    body.append(scr);
+
+    const cvs = scr.querySelector("canvas");
+    const g = cvs.getContext("2d");
+    const msg = scr.querySelector(".snake-msg");
+    const scoreEl = scr.querySelector(".sn-score");
+    const bestEl = scr.querySelector(".sn-best");
+    const startBtn = scr.querySelector(".sn-start");
+    const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+
+    let snake, dir, queue, food, score, step, timer = 0, alive = false, paused = false, cell = 20, popT = 0;
+    bestEl.textContent = getBest();
+
+    // Размер поля под экран
+    function fit() {
+      const size = Math.floor(Math.min(innerWidth - 28, innerHeight - 260, 520) / N) * N;
+      cell = size / N;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cvs.width = size * dpr; cvs.height = size * dpr;
+      cvs.style.width = cvs.style.height = size + "px";
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    function placeFood() {
+      const free = [];
+      for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) {
+        if (!snake.some((s) => s[0] === x && s[1] === y)) free.push([x, y]);
+      }
+      const [x, y] = free[(Math.random() * free.length) | 0];
+      food = { x, y, e: FOODS[(Math.random() * FOODS.length) | 0] };
+      popT = performance.now();
+    }
+
+    function reset() {
+      const m = N >> 1;
+      snake = [[m, m], [m - 1, m], [m - 2, m]];
+      dir = "right"; queue = []; score = 0; step = 150;
+      scoreEl.textContent = 0;
+      placeFood();
+    }
+
+    function turn(d) {
+      if (!alive) return;
+      // Очередь из двух поворотов — чтобы быстрые свайпы не терялись
+      const last = queue.length ? queue[queue.length - 1] : dir;
+      const [a, b] = DIRS[d], [c, e] = DIRS[last];
+      if (a === -c && b === -e) return; // разворот на 180° нельзя
+      if (d !== last && queue.length < 2) queue.push(d);
+    }
+
+    function tick() {
+      if (queue.length) dir = queue.shift();
+      const [dx, dy] = DIRS[dir];
+      const head = [snake[0][0] + dx, snake[0][1] + dy];
+      const eat = head[0] === food.x && head[1] === food.y;
+      const body2 = eat ? snake : snake.slice(0, -1); // хвост уходит, если не ели
+      if (head[0] < 0 || head[1] < 0 || head[0] >= N || head[1] >= N || body2.some((s) => s[0] === head[0] && s[1] === head[1])) {
+        return over();
+      }
+      snake = [head, ...body2];
+      if (eat) {
+        score++;
+        scoreEl.textContent = score;
+        Music.pop();
+        if (navigator.vibrate) try { navigator.vibrate(12); } catch (e) {}
+        step = Math.max(70, step - 4); // постепенно быстрее
+        if (snake.length === N * N) return over(true);
+        placeFood();
+      }
+      draw();
+      timer = setTimeout(tick, step);
+    }
+
+    function over(win) {
+      alive = false;
+      clearTimeout(timer);
+      const best = getBest();
+      const record = score > best;
+      if (record) { setBest(score); bestEl.textContent = score; }
+      draw(true);
+      msg.innerHTML = `<h2>${win ? "Ты прошла змейку 🤯" : record ? "Новый рекорд! 🏆" : "Упс 🙈"}</h2>
+        <p>Собрано: <b>${score}</b> ${record ? "" : "· рекорд " + Math.max(best, score)}</p>
+        <button class="btn sn-start" type="button">Ещё раз</button>`;
+      msg.querySelector(".sn-start").addEventListener("click", start);
+      msg.hidden = false;
+      if (record && score > 0) confetti(["#3dff9c", "#a855ff", "#ffd27a", "#ffffff"], 90);
+    }
+
+    function start() {
+      reset();
+      msg.hidden = true;
+      alive = true; paused = false;
+      draw();
+      clearTimeout(timer);
+      timer = setTimeout(tick, step);
+    }
+
+    function draw(dead) {
+      if (!snake) { g.clearRect(0, 0, cell * N, cell * N); return; }
+      const S = cell * N;
+      g.clearRect(0, 0, S, S);
+      // Клетчатое поле
+      for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) {
+        g.fillStyle = (x + y) % 2 ? "rgba(255,255,255,.035)" : "rgba(255,255,255,.07)";
+        g.fillRect(x * cell, y * cell, cell, cell);
+      }
+      // Еда — эмодзи, слегка «пульсирует» при появлении
+      const k = Math.min(1, (performance.now() - popT) / 250);
+      g.font = `${Math.round(cell * (0.55 + 0.35 * k))}px system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillStyle = "#fff"; // непрозрачный цвет, иначе эмодзи выходит бледным
+      g.fillText(food.e, food.x * cell + cell / 2, food.y * cell + cell / 2 + 1);
+      // Змейка: от неоново-зелёной головы к фиолетовому хвосту
+      snake.forEach(([x, y], i) => {
+        const t = i / Math.max(1, snake.length - 1);
+        const r = Math.round(61 + (168 - 61) * t), gg = Math.round(255 + (85 - 255) * t), b = Math.round(156 + (255 - 156) * t);
+        g.fillStyle = dead ? "#ff5a7a" : `rgb(${r},${gg},${b})`;
+        g.shadowColor = g.fillStyle; g.shadowBlur = i === 0 ? 14 : 6;
+        const p = cell * 0.08;
+        g.beginPath();
+        g.roundRect ? g.roundRect(x * cell + p, y * cell + p, cell - 2 * p, cell - 2 * p, cell * 0.3) : g.rect(x * cell + p, y * cell + p, cell - 2 * p, cell - 2 * p);
+        g.fill();
+      });
+      g.shadowBlur = 0;
+      // Глазки у головы
+      const [hx, hy] = snake[0], [dx, dy] = DIRS[dir];
+      g.fillStyle = "#170b2e";
+      [-1, 1].forEach((s) => {
+        const ex = hx * cell + cell / 2 + dx * cell * 0.18 + (dy ? s * cell * 0.18 : 0);
+        const ey = hy * cell + cell / 2 + dy * cell * 0.18 + (dx ? s * cell * 0.18 : 0);
+        g.beginPath(); g.arc(ex, ey, cell * 0.08, 0, Math.PI * 2); g.fill();
+      });
+    }
+
+    function open() {
+      scr.classList.add("open");
+      document.documentElement.classList.add("snake-lock"); // страница под игрой не прокручивается
+      fit();
+      if (!snake) { reset(); draw(); }
+    }
+    function close() {
+      alive = false;
+      clearTimeout(timer);
+      scr.classList.remove("open");
+      document.documentElement.classList.remove("snake-lock");
+      msg.hidden = false;
+      msg.innerHTML = `<h2>Змейка-именинница 🐍</h2><p>Рекорд: <b>${getBest()}</b>. Побьёшь?</p><button class="btn sn-start" type="button">Играть</button>`;
+      msg.querySelector(".sn-start").addEventListener("click", start);
+    }
+
+    openBtn.addEventListener("click", open);
+    scr.querySelector(".sn-close").addEventListener("click", close);
+    startBtn.addEventListener("click", start);
+    scr.querySelectorAll(".snake-pad button").forEach((b) => b.addEventListener("pointerdown", (e) => { e.preventDefault(); turn(b.dataset.d); }));
+
+    // Свайпы по полю
+    let sx = 0, sy = 0, swiping = false;
+    cvs.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; swiping = true; });
+    cvs.addEventListener("pointermove", (e) => {
+      if (!swiping) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+      turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+      sx = e.clientX; sy = e.clientY; // можно вести палец дальше и поворачивать ещё
+    });
+    addEventListener("pointerup", () => { swiping = false; });
+
+    // Клавиатура
+    const KEYS = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", w: "up", s: "down", a: "left", d: "right", ц: "up", ы: "down", ф: "left", в: "right" };
+    const onKey = (e) => {
+      if (!scr.classList.contains("open")) return;
+      if (e.key === "Escape") return close();
+      if (e.key === " " && alive) { e.preventDefault(); paused = !paused; if (paused) clearTimeout(timer); else timer = setTimeout(tick, step); return; }
+      if (e.key === "Enter" && !alive) return start();
+      const d = KEYS[e.key] || KEYS[e.key.toLowerCase()];
+      if (d) { e.preventDefault(); turn(d); }
+    };
+    addEventListener("keydown", onKey);
+    addEventListener("resize", fit);
+    // Свернула вкладку — пауза
+    const onHide = () => { if (document.hidden && alive && !paused) { paused = true; clearTimeout(timer); } else if (!document.hidden && alive && paused) { paused = false; timer = setTimeout(tick, step); } };
+    document.addEventListener("visibilitychange", onHide);
+
+    P.cleanups.push(() => {
+      clearTimeout(timer);
+      removeEventListener("keydown", onKey);
+      removeEventListener("resize", fit);
+      document.removeEventListener("visibilitychange", onHide);
+      document.documentElement.classList.remove("snake-lock");
+      scr.remove();
+    });
+  }
+
   function setupCake(stage) {
     const candles = [...stage.querySelectorAll(".candle")];
     const btn = stage.querySelector("#blow");
@@ -878,6 +1108,10 @@
     /* ---------- Обратный отсчёт до дня рождения ---------- */
     const cd = main.querySelector(".countdown");
     if (cd && !isOpen()) setupCountdown(cd);
+
+    /* ---------- Змейка на экране ожидания ---------- */
+    const snakeBtn = main.querySelector("#snake-open");
+    if (snakeBtn) setupSnake(snakeBtn);
 
     /* ---------- Разминка на странице хайлайтов ---------- */
     const aim = main.querySelector("#aim");
